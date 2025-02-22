@@ -47,15 +47,25 @@ import Json.Encode as JE exposing (Value)
 import List.Extra as LE
 
 
+{-| Configuration.
+
+Returned by `init`. Passed to `send`.
+
+-}
 type alias Config msg =
     IM.Config msg
 
 
-init : (Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> ( Config msg, Cmd msg )
-init sendPort receivePort =
+{-| Initialize the JavaScript code.
+
+Will send back a ReceiveMessage.BTReceiveInit.
+
+-}
+init : (Value -> Cmd msg) -> ( Config msg, Cmd msg )
+init sendPort =
     let
         config =
-            IM.makeConfig sendPort receivePort
+            IM.makeConfig sendPort
     in
     ( config
     , IM.send config SMInit

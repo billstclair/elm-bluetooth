@@ -23,13 +23,8 @@ type alias SendPort msg =
     Value -> Cmd msg
 
 
-type alias ReceivePort msg =
-    (Value -> msg) -> Sub msg
-
-
 type alias ConfigRecord msg =
     { sendPort : SendPort msg
-    , receivePort : ReceivePort msg
     }
 
 
@@ -37,9 +32,9 @@ type Config msg
     = Config (ConfigRecord msg)
 
 
-makeConfig : SendPort msg -> ReceivePort msg -> Config msg
-makeConfig sendPort receivePort =
-    Config { sendPort = sendPort, receivePort = receivePort }
+makeConfig : SendPort msg -> Config msg
+makeConfig sendPort =
+    Config { sendPort = sendPort }
 
 
 send : Config msg -> SendMessage -> Cmd msg
