@@ -122,17 +122,22 @@ wireMessageToReceiveMessage : WireMessage -> ReceiveMessage
 wireMessageToReceiveMessage wireMessage =
     case wireMessage.msg of
         "init" ->
-            case JD.decodeValue JD.string wireMessage.value of
-                Err err ->
-                    RMError <| JD.errorToString err
-
-                Ok initStateString ->
-                    case decodeInitStateString initStateString of
-                        Err s ->
-                            RMError s
-
-                        Ok initState ->
-                            RMInit initState
+            decodeInit wireMessage.value
 
         _ ->
             RMError <| "Unknown wire msg: " ++ wireMessage.msg
+
+
+decodeInit : Value -> ReceiveMessage
+decodeInit value =
+    case JD.decodeValue JD.string value of
+        Err err ->
+            RMError <| JD.errorToString err
+
+        Ok initStateString ->
+            case decodeInitStateString initStateString of
+                Err s ->
+                    RMError s
+
+                Ok initState ->
+                    RMInit initState
