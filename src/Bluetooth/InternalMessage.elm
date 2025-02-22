@@ -68,6 +68,7 @@ send config message =
 
 type SentMessage
     = SMInit
+    | SMRequestDevice
 
 
 encodeWireMessage : String -> Value -> Value
@@ -83,6 +84,9 @@ encodeSentMessage message =
     case message of
         SMInit ->
             encodeWireMessage "init" JE.null
+
+        SMRequestDevice ->
+            encodeWireMessage "requestDevice" JE.null
 
 
 
@@ -114,6 +118,7 @@ decodeInitStateString s =
 type ReceivedMessage
     = RMError String
     | RMInit InitState
+    | RMRequestDevice String --we'll parse this soon
 
 
 receivedMessageDecoder : Decoder ReceivedMessage
@@ -138,6 +143,9 @@ wireMessageToReceivedMessage wireMessage =
         "init" ->
             decodeInit value
 
+        "requestDevice" ->
+            decodeRequestDevice value
+
         _ ->
             RMError <| "Unknown wire msg: " ++ wireMessage.msg
 
@@ -152,6 +160,11 @@ decodeError value =
 
         Ok s ->
             RMError s
+
+
+decodeRequestDevice : Value -> ReceivedMessage
+decodeRequestDevice value =
+    RMRequestDevice <| JE.encode 2 value
 
 
 decodeInit : Value -> ReceivedMessage

@@ -3,11 +3,11 @@ port module Main exposing (main)
 {-| Bluetooth Example
 -}
 
-import Bluetooth
+import Bluetooth exposing (SentMessage(..))
 import Browser
 import Cmd.Extra exposing (addCmd, addCmds, withCmd, withCmds, withNoCmd)
 import Dict exposing (Dict)
-import Html exposing (Html, a, button, div, h1, input, p, span, text)
+import Html exposing (Html, a, button, code, div, h1, input, p, pre, span, text)
 import Html.Attributes
     exposing
         ( checked
@@ -42,11 +42,18 @@ subscriptions model =
     bluetoothReceive BluetoothReceive
 
 
+type alias Response =
+    { sent : String
+    , received : String
+    }
+
+
 type alias Model =
     { config : Bluetooth.Config Msg
     , error : Maybe String
     , bluetoothAvailable : Bool
     , initState : Maybe Bluetooth.InitState
+    , response : Maybe Response
     }
 
 
@@ -69,12 +76,14 @@ init _ =
     , error = Nothing
     , bluetoothAvailable = False
     , initState = Nothing
+    , response = Nothing
     }
         |> withCmd cmd
 
 
 type Msg
     = BluetoothReceive Value
+    | Send SentMessage
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -84,6 +93,9 @@ update msg model =
             { model | error = Nothing }
     in
     case msg of
+        Send message ->
+            model |> withCmd (Bluetooth.send model.config message)
+
         BluetoothReceive value ->
             case
                 Debug.log "BluetoothReceive" <|
@@ -97,6 +109,16 @@ update msg model =
                     case message of
                         Bluetooth.ReceivedError s ->
                             { model | error = Just s }
+                                |> withNoCmd
+
+                        Bluetooth.ReceivedRequestDevice device ->
+                            { model
+                                | response =
+                                    Just
+                                        { sent = "RequestDevice"
+                                        , received = device
+                                        }
+                            }
                                 |> withNoCmd
 
                         Bluetooth.ReceivedInitialized initState ->
@@ -171,8 +193,24 @@ view model =
 
 viewPage : Model -> Html Msg
 viewPage model =
-    p []
-        [ text "More coming soon." ]
+    div []
+        [ p []
+            [ button [ onClick <| Send SendRequestDevice ]
+                [ text "requestDevice" ]
+            ]
+        , case model.response of
+            Nothing ->
+                text ""
+
+            Just { sent, received } ->
+                p []
+                    [ b "sent: "
+                    , text sent
+                    , br
+                    , pre []
+                        [ code [] [ text received ] ]
+                    ]
+        ]
 
 
 footer : Model -> Html Msg
@@ -187,6 +225,12 @@ footer model =
             [ text "github.com/billstclair/elm-bluetooth" ]
         , br
         , b "Bluetooth API docs: "
-        , a [ href "https://developer.mozilla.org/en-US/docs/Web/API/Bluetooth" ]
-            [ text "developer.mozilla.org/en-US/docs/Web/API/Bluetooth" ]
+        , br
+        , div [ style "margin-left" "1em" ]
+            [ a [ href "https://developer.mozilla.org/en-US/docs/Web/API/Bluetooth" ]
+                [ text "Mozilla's Bluetooth Web API Docs" ]
+            , br
+            , a [ href "https://developer.chrome.com/docs/capabilities/bluetooth" ]
+                [ text "Communicating with Bluetooth Devices over JavaScript" ]
+            ]
         ]

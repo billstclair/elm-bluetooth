@@ -96,6 +96,7 @@ init sendPort =
 -}
 type SentMessage
     = SendNoop
+    | SendRequestDevice
 
 
 {-| Send a message to the JavaScript code.
@@ -106,12 +107,16 @@ send config message =
         SendNoop ->
             Cmd.none
 
+        SendRequestDevice ->
+            IM.send config SMRequestDevice
+
 
 {-| Messages received from the JavaScript code.
 -}
 type ReceivedMessage
     = ReceivedError String
     | ReceivedInitialized InitState
+    | ReceivedRequestDevice String
 
 
 {-| Returned in the ReceivedInitialized message.
@@ -166,3 +171,12 @@ decodeReceivedMessage receivedValue =
 
                     RMInit initState ->
                         ReceivedInitialized <| convertInitState initState
+
+                    RMRequestDevice json ->
+                        ReceivedRequestDevice json
+
+
+
+--
+-- Control an initialized interface.
+--

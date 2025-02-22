@@ -12,7 +12,7 @@
   
 var ElmBluetooth = {};
 
-function init(app, sendPortName='bluetoothSend', receivePortName='bluetoothReceive') {
+function init (app, sendPortName='bluetoothSend', receivePortName='bluetoothReceive') {
   console.log('ElmBluetooth.init: ', app, sendPortName, receivePortName);
 
   if (app && app.ports && app.ports[sendPortName] && app.ports[receivePortName]) {
@@ -33,30 +33,48 @@ function init(app, sendPortName='bluetoothSend', receivePortName='bluetoothRecei
     return { msg: name, value: value }
   }
 
-  function error(value) {
-    send(makeMsg("error", value));
+  function sendMsg (name, value) {
+    send(makeMsg(name, value));
   }
 
-  function dispatch(msg) {
+  function error (value) {
+    sendMsg("error", value);
+  }
+
+  function dispatch (msg) {
     if (typeof(msg) != 'object') {
       error("msg is not an object: " + msg);
     } else {
       var value = msg.value;
       switch (msg.msg) {
         case "init": init(value); break;
+        case "requestDevice": requestDevice(value); break;
         default: error("Unknown message type: " + msg.msg);
       }
     }
 
+    function requestDevice () {
+      try {
+        navigator.bluetooth.requestDevice({acceptAllDevices: true}).then(x => {
+          console.log("ElmBluetooth, requestDevice: ", x);
+          sendMsg("requestDevice", x);
+        });
+      } catch (errMsg) {
+        console.log("ElmBluetooth, requestDevice error: ", errMsg);
+        error(errMsg);
+      };
+      
+    }
+
     function init () {
       if (!navigator.bluetooth) {
-        send(makeMsg("init", "unsupported"));
+        sendMsg("init", "unsupported");
       } else {
         navigator.bluetooth.getAvailability().then(available => {
           if (available) {
-            send(makeMsg("init", "available"));
+            sendMsg("init", "available");
           } else {
-            send(makeMsg("init", "unavailable"));
+            sendMsg("init", "unavailable");
           }
         });
       }
