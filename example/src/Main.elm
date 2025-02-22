@@ -139,5 +139,9 @@ view model =
             , b "GitHub: "
             , a [ href "https://github.com/billstclair/elm-bluetooth" ]
                 [ text "github.com/billstclair/elm-bluetooth" ]
+            , br
+            , b "Bluetooth API docs: "
+            , a [ href "https://developer.mozilla.org/en-US/docs/Web/API/Bluetooth" ]
+                [ text "developer.mozilla.org" ]
             ]
         ]
