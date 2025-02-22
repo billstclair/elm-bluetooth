@@ -27,16 +27,16 @@
       var appName = 'Main';
       var flags = undefined;
 
-      if (typeof(Elm) == 'object') {
+      if (Elm) {
         var app = Elm[appName];
         if (app) {
-          app.init({
+          app = app.init({
             node : document.getElementById('elm'),
             flags : flags
           });
           // These names are the default for ElmBluetooth.init()
-          var sendPortName = 'elmBluetoothSend';
-          var receivePortName = 'elmBluetoothReceive';
+          var sendPortName = 'bluetoothSend';
+          var receivePortName = 'bluetoothReceive';
           ElmBluetooth.init(app, sendPortName, receivePortName);
         }
       }

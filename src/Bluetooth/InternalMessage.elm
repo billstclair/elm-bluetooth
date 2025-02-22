@@ -17,10 +17,10 @@
 module Bluetooth.InternalMessage exposing
     ( Config
     , InitState(..)
-    , ReceiveMessage(..)
-    , SendMessage(..)
+    , ReceivedMessage(..)
+    , SentMessage(..)
     , makeConfig
-    , receiveMessageDecoder
+    , receivedMessageDecoder
     , send
     )
 
@@ -57,25 +57,32 @@ makeConfig sendPort =
 -- Sending message to the JavaScript
 
 
-send : Config msg -> SendMessage -> Cmd msg
+{-| Send a message to the ElmBluetooth JS code.
+-}
+send : Config msg -> SentMessage -> Cmd msg
 send config message =
     case config of
         Config { sendPort } ->
-            sendPort <| encodeSendMessage message
+            sendPort <| encodeSentMessage message
 
 
-type SendMessage
+type SentMessage
     = SMInit
 
 
-encodeSendMessage : SendMessage -> Value
-encodeSendMessage message =
+encodeWireMessage : String -> Value -> Value
+encodeWireMessage msg value =
+    JE.object
+        [ ( "msg", JE.string msg )
+        , ( "value", value )
+        ]
+
+
+encodeSentMessage : SentMessage -> Value
+encodeSentMessage message =
     case message of
         SMInit ->
-            JE.object
-                [ ( "msg", JE.string "init" )
-                , ( "value", JE.null )
-                ]
+            encodeWireMessage "init" JE.null
 
 
 
@@ -104,31 +111,50 @@ decodeInitStateString s =
             Err <| "Unknown InitState string: " ++ s
 
 
-type ReceiveMessage
+type ReceivedMessage
     = RMError String
     | RMInit InitState
 
 
-receiveMessageDecoder : Decoder ReceiveMessage
-receiveMessageDecoder =
+receivedMessageDecoder : Decoder ReceivedMessage
+receivedMessageDecoder =
     (JD.succeed WireMessage
         |> required "msg" JD.string
         |> required "value" JD.value
     )
-        |> JD.map wireMessageToReceiveMessage
+        |> JD.map wireMessageToReceivedMessage
 
 
-wireMessageToReceiveMessage : WireMessage -> ReceiveMessage
-wireMessageToReceiveMessage wireMessage =
+wireMessageToReceivedMessage : WireMessage -> ReceivedMessage
+wireMessageToReceivedMessage wireMessage =
+    let
+        value =
+            wireMessage.value
+    in
     case wireMessage.msg of
+        "error" ->
+            decodeError value
+
         "init" ->
-            decodeInit wireMessage.value
+            decodeInit value
 
         _ ->
             RMError <| "Unknown wire msg: " ++ wireMessage.msg
 
 
-decodeInit : Value -> ReceiveMessage
+decodeError : Value -> ReceivedMessage
+decodeError value =
+    -- Maybe we should distinguish Json decoding errors from
+    -- Bluetooth errors, but I don't expect to get any of the former.
+    case JD.decodeValue JD.string value of
+        Err err ->
+            RMError <| JD.errorToString err
+
+        Ok s ->
+            RMError s
+
+
+decodeInit : Value -> ReceivedMessage
 decodeInit value =
     case JD.decodeValue JD.string value of
         Err err ->

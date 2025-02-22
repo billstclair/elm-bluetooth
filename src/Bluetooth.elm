@@ -15,34 +15,54 @@
 
 
 module Bluetooth exposing
-    ( Config
+    ( Config, SentMessage(..), ReceivedMessage(..), InitState(..)
     , init
+    , send
+    , decodeReceivedMessage
+    , initStateToString
     )
 
 {-| The Bluetooth Web API is an experimental API.
 
-Hence, Bluetooth-Web-API is supported by only a few browsers. I use
+Hence, it is supported by only a few browsers. I use
 Google Chrome for development.
 
-If the Bluetooth-Web-API is not available in your browser, `init` will
-return an error.
-
-
-# Bluetooth
+If the Bluetooth Web API is not available in your browser, `init` will
+let you know via the `ReceivedInitialize` message.
 
 
 ## Types
 
-@docs Config
+@docs Config, SentMessage, ReceivedMessage, InitState
 
 
 ## Initializing
 
 @docs init
 
+
+## Sending messages
+
+@docs send
+
+
+## Receiving messages
+
+@docs decodeReceivedMessage
+
+
+## Miscelaneous
+
+@docs initStateToString
+
 -}
 
-import Bluetooth.InternalMessage as IM exposing (SendMessage(..))
+import Bluetooth.InternalMessage as IM
+    exposing
+        ( ReceivedMessage(..)
+        , SentMessage(..)
+        )
+import Json.Decode as JD exposing (Decoder)
 import Json.Encode as JE exposing (Value)
 import List.Extra as LE
 
@@ -70,3 +90,79 @@ init sendPort =
     ( config
     , IM.send config SMInit
     )
+
+
+{-| Messages sent to the ElmBluetooth JavaScript code.
+-}
+type SentMessage
+    = SendNoop
+
+
+{-| Send a message to the JavaScript code.
+-}
+send : Config msg -> SentMessage -> Cmd msg
+send config message =
+    case message of
+        SendNoop ->
+            Cmd.none
+
+
+{-| Messages received from the JavaScript code.
+-}
+type ReceivedMessage
+    = ReceivedError String
+    | ReceivedInitialized InitState
+
+
+{-| Returned in the ReceivedInitialized message.
+-}
+type InitState
+    = BluetoothAvailable
+    | BluetoothUnavailable
+    | BluetoothUnsupported
+
+
+convertInitState : IM.InitState -> InitState
+convertInitState initState =
+    case initState of
+        IM.Available ->
+            BluetoothAvailable
+
+        IM.Unavailable ->
+            BluetoothUnavailable
+
+        IM.Unsupported ->
+            BluetoothUnsupported
+
+
+{-| Convert an `InitState` to a string for printing.
+-}
+initStateToString : InitState -> String
+initStateToString initState =
+    case initState of
+        BluetoothAvailable ->
+            "BluetoothAvailable"
+
+        BluetoothUnavailable ->
+            "BluetoothUnavailable"
+
+        BluetoothUnsupported ->
+            "BluetoothUnsupported"
+
+
+{-| Decode a message received from the port you've subscribed to.
+-}
+decodeReceivedMessage : Value -> Result String ReceivedMessage
+decodeReceivedMessage receivedValue =
+    case JD.decodeValue IM.receivedMessageDecoder receivedValue of
+        Err err ->
+            Err <| JD.errorToString err
+
+        Ok receivedMessage ->
+            Ok <|
+                case receivedMessage of
+                    RMError s ->
+                        ReceivedError s
+
+                    RMInit initState ->
+                        ReceivedInitialized <| convertInitState initState
