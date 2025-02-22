@@ -4,6 +4,17 @@
 
 ## Using the Package
 
-See `Main.elm` and `PortFunnels.elm` in the the [example/src](https://github.com/billstclair/elm-websocket-client/tree/master/example/src) directory for details. `PortFunnels.elm` exposes a `State` type and an `initialState` constant.
+See `Main.elm` and `site/` in the the [example/src](https://github.com/billstclair/elm-bluetooth/tree/master/example/src) directory for details. You need to include [example/site/js/elm-bluetooth.js](https://github.com/billstclair/elm-bluetooth/tree/master/example/site/js/elm-bluetooth.js) in your web site, and load and initialize it from your `index.html`, as done by [example/site/index.html](https://github.com/billstclair/elm-bluetooth/tree/master/example/site/index.html).
 
-You will usually copy `PortFunnels.elm` into your application's source directory, and, if you use other `PortFunnel` modules, modify it to support all of them. It is a `port module`, and it defines the two ports that are used by `example/site/index.html`, `cmdPort` and `subPort`.
+## Example
+
+To build the example:
+
+    cd .../elm-bluetooth/example
+    bin/build
+    
+This compiles the example Elm code into `.../elm-bluetooth/example/site/elm.js`.
+
+Then aim a web browser at `.../elm-bluetooth/example/site/index.html`
+
+The example is live at [lisplog.org/elm-bluetooth](https://lisplog.org/elm-bluetooth/).

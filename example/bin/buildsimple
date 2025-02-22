@@ -1,3 +1,0 @@
-#!/bin/bash
-
-elm make src/simple.elm --output site/elm.js

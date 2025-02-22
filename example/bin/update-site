@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Build the example, and copy it to my web server.
+# This won't be very useful to anybody but me.
+# Expects to be executed from the .../elm-bluetooth directory.
+
+bin/build
+cd site
+rsyncit
