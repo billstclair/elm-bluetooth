@@ -14,8 +14,18 @@
 -- TODO
 
 
-module Bluetooth.InternalMessage exposing (Config, SendMessage(..), makeConfig, send)
+module Bluetooth.InternalMessage exposing
+    ( Config
+    , InitState(..)
+    , ReceiveMessage(..)
+    , SendMessage(..)
+    , makeConfig
+    , receiveMessageDecoder
+    , send
+    )
 
+import Json.Decode as JD exposing (Decoder)
+import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
 
 
@@ -32,9 +42,19 @@ type Config msg
     = Config (ConfigRecord msg)
 
 
+type alias WireMessage =
+    { msg : String
+    , value : Value
+    }
+
+
 makeConfig : SendPort msg -> Config msg
 makeConfig sendPort =
     Config { sendPort = sendPort }
+
+
+
+-- Sending message to the JavaScript
 
 
 send : Config msg -> SendMessage -> Cmd msg
@@ -52,4 +72,67 @@ encodeSendMessage : SendMessage -> Value
 encodeSendMessage message =
     case message of
         SMInit ->
-            JE.null
+            JE.object
+                [ ( "msg", JE.string "init" )
+                , ( "value", JE.null )
+                ]
+
+
+
+-- decoding received messages
+
+
+type InitState
+    = Available
+    | Unavailable
+    | Unsupported
+
+
+decodeInitStateString : String -> Result String InitState
+decodeInitStateString s =
+    case String.toLower s of
+        "available" ->
+            Ok Available
+
+        "unavailable" ->
+            Ok Unavailable
+
+        "unsupported" ->
+            Ok Unsupported
+
+        _ ->
+            Err <| "Unknown InitState string: " ++ s
+
+
+type ReceiveMessage
+    = RMError String
+    | RMInit InitState
+
+
+receiveMessageDecoder : Decoder ReceiveMessage
+receiveMessageDecoder =
+    (JD.succeed WireMessage
+        |> required "msg" JD.string
+        |> required "value" JD.value
+    )
+        |> JD.map wireMessageToReceiveMessage
+
+
+wireMessageToReceiveMessage : WireMessage -> ReceiveMessage
+wireMessageToReceiveMessage wireMessage =
+    case wireMessage.msg of
+        "init" ->
+            case JD.decodeValue JD.string wireMessage.value of
+                Err err ->
+                    RMError <| JD.errorToString err
+
+                Ok initStateString ->
+                    case decodeInitStateString initStateString of
+                        Err s ->
+                            RMError s
+
+                        Ok initState ->
+                            RMInit initState
+
+        _ ->
+            RMError <| "Unknown wire msg: " ++ wireMessage.msg
