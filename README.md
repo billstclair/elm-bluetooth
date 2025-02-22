@@ -4,7 +4,7 @@
 
 ## Using the Package
 
-See `Main.elm` and `site/` in the the [example/src](https://github.com/billstclair/elm-bluetooth/tree/master/example/src) directory for details. You need to include [example/site/js/elm-bluetooth.js](https://github.com/billstclair/elm-bluetooth/tree/master/example/site/js/elm-bluetooth.js) in your web site, and load and initialize it from your `index.html`, as done by [example/site/index.html](https://github.com/billstclair/elm-bluetooth/tree/master/example/site/index.html).
+See `Main.elm` in the the [example/src](https://github.com/billstclair/elm-bluetooth/tree/master/example/src) directory for details. You need to include [example/site/js/elm-bluetooth.js](https://github.com/billstclair/elm-bluetooth/tree/master/example/site/js/elm-bluetooth.js) in your web site, and load and initialize it from your `index.html`, as done by [example/site/index.html](https://github.com/billstclair/elm-bluetooth/tree/master/example/site/index.html).
 
 ## Example
 
