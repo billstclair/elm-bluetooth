@@ -110,5 +110,5 @@ type alias Byte =
 -}
 type ServiceData
     = SDService ServiceName
-    | DFDataPrefix (List Byte)
-    | DFMask (List Byte)
+    | SDDataPrefix (List Byte)
+    | SDMask (List Byte)
