@@ -27,19 +27,15 @@ The arg to the `SendRequestDevice` option for `SentMessage`, an arg to
 
 @docs RequestDeviceOptions
 
-which is a list of:
-
 @docs RequestDeviceOption
-
-which has options referencing types:
 
 @docs RequestDeviceFilter, ServiceName, CompanyIdentifier
 
-A `RequestDeviceFilter` has options referencing:
+`RequestDeviceFilter` has options referencing `GATTService`, `ManufacturerData`, and `ServiceData`.
 
 @docs GATTService, ManufacturerData, ServiceData
 
-Referenced by options to `ManufacturerData` and `ServiceData`:
+`Byte` is referenced by options to `ManufacturerData` and `ServiceData`:
 
 @docs Byte
 
@@ -52,7 +48,7 @@ type alias RequestDeviceOptions =
     List RequestDeviceOption
 
 
-{-| On of the list of options to `requestDevice(options)`.
+{-| One of the list of options to `Bluetooth.SendRequestDevice`.
 From [requestDevice](https://developer.mozilla.org/en-US/docs/Web/API/Bluetooth/requestDevice) docs.
 -}
 type RequestDeviceOption
@@ -63,7 +59,7 @@ type RequestDeviceOption
     | RSOAcceptAllDevices Bool
 
 
-{-| One of the list of `RequestDeviceOption` `RDOFilters`.
+{-| One of the list of `RequestDeviceOption` `RDOFilters` or `RDOExclusionFilters`.
 -}
 type RequestDeviceFilter
     = RDFServices (List GATTService)
