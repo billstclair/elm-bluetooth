@@ -24,6 +24,19 @@ module Bluetooth.InternalMessage exposing
     , send
     )
 
+import Bluetooth.EncodeDecode as ED
+import Bluetooth.Types
+    exposing
+        ( Byte
+        , CompanyIdentifier
+        , GATTService
+        , ManufacturerData(..)
+        , RequestDeviceFilter(..)
+        , RequestDeviceOption(..)
+        , RequestDeviceOptions
+        , ServiceData(..)
+        , ServiceName
+        )
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
@@ -68,7 +81,7 @@ send config message =
 
 type SentMessage
     = SMInit
-    | SMRequestDevice
+    | SMRequestDevice RequestDeviceOptions
 
 
 encodeWireMessage : String -> Value -> Value
@@ -85,8 +98,9 @@ encodeSentMessage message =
         SMInit ->
             encodeWireMessage "init" JE.null
 
-        SMRequestDevice ->
-            encodeWireMessage "requestDevice" JE.null
+        SMRequestDevice options ->
+            encodeWireMessage "requestDevice" <|
+                ED.encodeRequestDeviceOptions options
 
 
 

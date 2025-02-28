@@ -62,6 +62,7 @@ import Bluetooth.InternalMessage as IM
         ( ReceivedMessage(..)
         , SentMessage(..)
         )
+import Bluetooth.Types exposing (RequestDeviceOptions)
 import Json.Decode as JD exposing (Decoder)
 import Json.Encode as JE exposing (Value)
 import List.Extra as LE
@@ -96,7 +97,7 @@ init sendPort =
 -}
 type SentMessage
     = SendNoop
-    | SendRequestDevice
+    | SendRequestDevice RequestDeviceOptions
 
 
 {-| Send a message to the JavaScript code.
@@ -107,8 +108,8 @@ send config message =
         SendNoop ->
             Cmd.none
 
-        SendRequestDevice ->
-            IM.send config SMRequestDevice
+        SendRequestDevice options ->
+            IM.send config (SMRequestDevice options)
 
 
 {-| Messages received from the JavaScript code.

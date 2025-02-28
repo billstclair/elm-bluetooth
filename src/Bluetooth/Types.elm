@@ -55,8 +55,8 @@ type RequestDeviceOption
     = RDOFilters (List RequestDeviceFilter)
     | RDOExclusionFilters (List RequestDeviceFilter)
     | RDOOptionalServices (List ServiceName)
-    | RSOOptionalManufacturerData (List CompanyIdentifier)
-    | RSOAcceptAllDevices Bool
+    | RDOOptionalManufacturerData (List CompanyIdentifier)
+    | RDOAcceptAllDevices Bool
 
 
 {-| One of the list of `RequestDeviceOption` `RDOFilters` or `RDOExclusionFilters`.
