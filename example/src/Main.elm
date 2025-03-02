@@ -4,6 +4,13 @@ port module Main exposing (main)
 -}
 
 import Bluetooth exposing (SentMessage(..))
+import Bluetooth.Types
+    exposing
+        ( ManufacturerData(..)
+        , RequestDeviceFilter(..)
+        , RequestDeviceOption(..)
+        , ServiceData(..)
+        )
 import Browser
 import Cmd.Extra exposing (addCmd, addCmds, withCmd, withCmds, withNoCmd)
 import Dict exposing (Dict)
@@ -191,11 +198,16 @@ view model =
         ]
 
 
+sendRequestDevice : Model -> Msg
+sendRequestDevice model =
+    Send (SendRequestDevice [ RDOAcceptAllDevices True ])
+
+
 viewPage : Model -> Html Msg
 viewPage model =
     div []
         [ p []
-            [ button [ onClick <| Send SendRequestDevice ]
+            [ button [ onClick <| sendRequestDevice model ]
                 [ text "requestDevice" ]
             ]
         , case model.response of
